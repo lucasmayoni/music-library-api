@@ -44,9 +44,8 @@ def mock_data():
 
 
 def test_save_to_file(mock_data, mock_file_path):
-    song_list = SongList()
-    song_list.SONG_PATH_FILE = str(mock_file_path)
-    song_list.save_to_file(mock_data)
+    SongList.SONG_PATH_FILE = str(mock_file_path)
+    SongList.save_to_file(mock_data)
 
     assert mock_file_path.exists()
 
@@ -57,8 +56,7 @@ def test_get_from_file(mocker, tmp_path):
         json.dump({'lists': [{'id': '123'}]}, f)
 
     mocker.patch.object(SongList, 'SONG_PATH_FILE', str(file_path))
-    song_list = SongList()
-    data = song_list.get_from_file()
+    data = SongList.get_from_file()
 
     assert data == {'lists': [{'id': '123'}]}
 
@@ -67,8 +65,7 @@ def test_get_from_file_file_is_empty(tmp_path, mocker):
     file_path = tmp_path / 'test_song.json'
     file_path.touch()
     mocker.patch.object(SongList, 'SONG_PATH_FILE', str(file_path))
-    song_list = SongList()
-    data = song_list.get_from_file()
+    data = SongList.get_from_file()
     assert data == {}
 
 
@@ -78,15 +75,13 @@ def test_get_from_file_data_is_no_dict(tmp_path, mocker):
         f.write('NOT DICT OR JSON')
 
     mocker.patch.object(SongList, 'SONG_PATH_FILE', str(file_path))
-    song_list = SongList()
-    data = song_list.get_from_file()
+    data = SongList.get_from_file()
     assert data == {}
 
 
 def test_get_from_file_not_exists(mocker):
     mocker.patch.object(SongList, 'SONG_PATH_FILE', '')
-    song_list = SongList()
-    data = song_list.get_from_file()
+    data = SongList.get_from_file()
     assert data == {}
 
 
@@ -97,9 +92,7 @@ def test_create_song_list(mocker, mocked_list_data):
     mock_save_to_file = mocker.patch('app.model.song_list.SongList.save_to_file')
     mock_save_to_file.return_value = None
 
-    song_list = SongList()
-
-    song_list.create_song_list(mocked_list_data)
+    SongList.create_song_list(mocked_list_data)
     mock_get_from_file.assert_called_once()
     expected_json_data = {'lists': [mocked_list_data]}
     mock_save_to_file.assert_called_once_with(expected_json_data)
@@ -122,8 +115,7 @@ def test_add_song_to_list(mocker):
         'album': 'cancion album'
     }
 
-    song_list = SongList()
-    song_list.add_song_to_list(song, '123')
+    SongList.add_song_to_list(song, '123')
     mock_get_from_file.assert_called_once()
     expected_json_data = {'lists': [{'id': '123', 'name': 'name', 'songs': [song]}]}
     mock_save_to_file.assert_called_once_with(expected_json_data)
@@ -139,9 +131,8 @@ def test_add_song_list_not_found(mocker):
         'album': 'cancion album'
     }
 
-    song_list = SongList()
     try:
-        song_list.add_song_to_list(song, '123')
+        SongList.add_song_to_list(song, '123')
         assert False, "ListNotFoundException not raised"
     except ListNotFoundException:
         assert True
@@ -164,8 +155,7 @@ def test_remove_song_from_list(mocker, mock_data):
     mock_save_to_file = mocker.patch('app.model.song_list.SongList.save_to_file')
     mock_save_to_file.return_value = None
 
-    song_list = SongList()
-    song_list.remove_song_from_list(song, '1234456abc')
+    SongList.remove_song_from_list(song, '1234456abc')
     mock_get_from_file.assert_called_once()
     expected_json_data = {'lists': [{'id': '1234456abc', 'name': 'lista nombre', 'songs': []}]}
     mock_save_to_file.assert_called_once_with(expected_json_data)
@@ -181,9 +171,8 @@ def test_remove_list_not_found(mocker):
         'album': 'cancion album'
     }
 
-    song_list = SongList()
     try:
-        song_list.remove_song_from_list(song, '123')
+        SongList.remove_song_from_list(song, '123')
         assert False, "ListNotFoundException not raised"
     except ListNotFoundException:
         assert True
@@ -196,8 +185,7 @@ def test_remove_list(mock_data, mocker):
     mock_save_to_file = mocker.patch('app.model.song_list.SongList.save_to_file')
     mock_save_to_file.return_value = None
 
-    song_list = SongList()
-    song_list.remove_list('1234456abc')
+    SongList.remove_list('1234456abc')
     mock_get_from_file.assert_called_once()
     expected_json_data = {'lists': []}
     mock_save_to_file.assert_called_once_with(expected_json_data)
@@ -211,8 +199,7 @@ def test_search_songs(mocker, mock_data, mocked_list_data):
     mock_matched_songs.return_value = True
 
     title = 'cancion titulo'
-    song_list = SongList()
-    found_list = song_list.search_songs(title, None, None)
+    found_list = SongList.search_songs(title, None, None)
     mock_get_from_file.assert_called_once()
     expected_json_data = mocked_list_data
     assert [expected_json_data] == found_list
@@ -226,8 +213,7 @@ def test_search_songs_not_found(mocker, mock_data):
     mock_matched_songs.return_value = False
 
     title = 'cancion titulo'
-    song_list = SongList()
-    found_list = song_list.search_songs(title, None, None)
+    found_list = SongList.search_songs(title, None, None)
     mock_get_from_file.assert_called_once()
     assert [] == found_list
 
@@ -236,8 +222,7 @@ def test_get_list_by_id(mocker, mock_data, mocked_list_data):
     mock_get_from_file = mocker.patch('app.model.song_list.SongList.get_from_file')
     mock_get_from_file.return_value = mock_data
 
-    song_list = SongList()
-    found_list = song_list.get_list_by_id("1234456abc")
+    found_list = SongList.get_list_by_id("1234456abc")
     mock_get_from_file.assert_called_once()
     expected_json_data = mocked_list_data
     assert [expected_json_data] == found_list
