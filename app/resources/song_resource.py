@@ -22,7 +22,7 @@ def authenticate(func):
 def create_song_list():
     list_data = request.get_json()
     try:
-        SongList().create_song_list(list_data)
+        SongList.create_song_list(list_data)
         return {'message': 'Song List created Successfully!'}, 201
     except Exception as e:
         return {'message': str(e)}, 400
@@ -33,7 +33,7 @@ def create_song_list():
 def add_song_to_list(list_id: str):
     song_data = request.get_json()
     try:
-        SongList().add_song_to_list(song_data, list_id)
+        SongList.add_song_to_list(song_data, list_id)
         return {'message': f'Song Added to list {list_id} Successfully!'}, 201
     except ListNotFoundException:
         return {'message': f'List {list_id} not found'}, 404
@@ -46,7 +46,7 @@ def add_song_to_list(list_id: str):
 def remove_song_from_list(list_id: str):
     song_data = request.get_json()
     try:
-        SongList().remove_song_from_list(song_data, list_id)
+        SongList.remove_song_from_list(song_data, list_id)
         return {'message': f'Song removed from list {list_id} Successfully!'}, 410
     except ListNotFoundException:
         return {'message': f'List {list_id} not found'}, 404
@@ -62,7 +62,7 @@ def find_list_with_song():
     album = request.args.get('album')
 
     try:
-        song_lists = SongList().search_songs(title, artist, album)
+        song_lists = SongList.search_songs(title, artist, album)
         if song_lists:
             return song_lists, 200
         return {'message': 'No list found'}, 404
@@ -74,7 +74,7 @@ def find_list_with_song():
 @authenticate
 def remove_list(list_id: str):
     try:
-        SongList().remove_list(list_id)
+        SongList.remove_list(list_id)
         return {'message': 'Song List removed Successfully!'}, 410
     except ListNotFoundException:
         return {'message': f'List {list_id} not found'}, 404
