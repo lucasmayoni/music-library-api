@@ -7,5 +7,5 @@ from app.resources.song_resource import song_api
 
 app.register_blueprint(song_api)
 
-with app.app_context():
-    app.run(debug=True)
+# with app.app_context():
+#    app.run(debug=True)
