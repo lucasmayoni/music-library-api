@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import Blueprint, request, jsonify
-from app.model.song_list import SongList
+from app.model.song_list import SongList, ListNotFoundException
 from flask_restful import marshal_with
 
 song_api = Blueprint('song_api', __name__)
@@ -13,6 +13,7 @@ def authenticate(func):
         if not auth_header or not auth_header.startswith('Bearer '):
             return jsonify({'error': 'Request is unauthorized'}), 401
         return func(*args, **kwargs)
+
     return validate_token
 
 
@@ -34,6 +35,8 @@ def add_song_to_list(list_id: str):
     try:
         SongList().add_song_to_list(song_data, list_id)
         return {'message': f'Song Added to list {list_id} Successfully!'}, 201
+    except ListNotFoundException:
+        return {'message': f'List {list_id} not found'}, 404
     except Exception as e:
         return {'message': str(e)}, 400
 
@@ -44,7 +47,9 @@ def remove_song_from_list(list_id: str):
     song_data = request.get_json()
     try:
         SongList().remove_song_from_list(song_data, list_id)
-        return {'message': f'Song removed from list {list_id} Successfully!'}, 201
+        return {'message': f'Song removed from list {list_id} Successfully!'}, 410
+    except ListNotFoundException:
+        return {'message': f'List {list_id} not found'}, 404
     except Exception as e:
         return {'message': str(e)}, 400
 
@@ -52,7 +57,17 @@ def remove_song_from_list(list_id: str):
 @song_api.route('/list/search', methods=['GET'])
 @authenticate
 def find_list_with_song():
-    return {'message': 'No result found'}, 404
+    title = request.args.get('song_title')
+    artist = request.args.get('artist')
+    album = request.args.get('album')
+
+    try:
+        song_lists = SongList().search_songs(title, artist, album)
+        if song_lists:
+            return song_lists, 200
+        return {'message': 'No list found'}, 404
+    except Exception as e:
+        return {'message': str(e)}, 400
 
 
 @song_api.route('/list/<string:list_id>', methods=['DELETE'])
@@ -61,6 +76,7 @@ def remove_list(list_id: str):
     try:
         SongList().remove_list(list_id)
         return {'message': 'Song List removed Successfully!'}, 410
+    except ListNotFoundException:
+        return {'message': f'List {list_id} not found'}, 404
     except Exception as e:
-        print(e)
         return {'message': str(e)}, 400
