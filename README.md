@@ -47,6 +47,6 @@ To run tests, run the following command
 
 ## Running with Postman
 
-Alternatively is a [postman collection] attached to import and test API using endpoints
+Alternatively is a [postman collection](https://github.com/lucasmayoni/music-library-api/blob/main/postman/Song_List_API.postman_collection.json) attached to import and test API using endpoints
 For this porpoise, information is stored in a json file
 
